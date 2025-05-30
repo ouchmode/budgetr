@@ -1,6 +1,8 @@
 import json
 import os
 
+from rich.prompt import Prompt
+
 class Budget:
     """
     this class handles the budget info.
@@ -65,3 +67,16 @@ class Budget:
         self.occurs = ""
         if os.path.exists('./data/budget.json'):
             os.remove('./data/budget.json')
+
+
+    def set_budget(self):
+        # the set option is always present.
+        print("\n-- Set Budget --")
+        self.occurs = Prompt.ask("Enter Occurrence ", 
+                                  choices=['Daily','Weekly','Monthly']
+                                  ).strip().title()
+        self.amt = input("Enter Budget Amount: ").strip()
+
+        self.budget = Budget(self.occurs, self.amt)
+        self.budget.save_budget()
+        print("\nBudget saved!")
