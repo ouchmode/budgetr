@@ -6,7 +6,6 @@ import sys
 from rich.console import Console
 from rich.box import DOUBLE_EDGE
 from rich.prompt import Confirm
-from rich.prompt import Prompt
 from rich.panel import Panel
 from rich import print
 
@@ -46,9 +45,10 @@ class UserInterface:
             menu = "[cyan]0.[/] Budgeting"
             menu += "\n[cyan]1.[/] Add Transaction"
             menu += "\n[cyan]2.[/] View Transaction"
-            menu += "\n[cyan]3.[/] Delete Transaction"
-            menu += "\n[cyan]4.[/] Totals"
-            menu += "\n[cyan]5.[/] Exit"
+            menu += "\n[cyan]3.[/] Update Transaction"
+            menu += "\n[cyan]4.[/] Delete Transaction"
+            menu += "\n[cyan]5.[/] Totals"
+            menu += "\n[cyan]6.[/] Exit"
            
             panel = Panel(menu, title="Main Menu", box=DOUBLE_EDGE, border_style="cyan", width=50)
             console.print(panel)
@@ -67,16 +67,13 @@ class UserInterface:
                     while True:
                         # txn amount user input.
                         txn_amt_input = float(input("\nEnter Transaction Amount: ").strip())
-                        txn_amt_input = f"{txn_amt_input:.2f}" # formatting to 2 dec.
-                            
-                        # txn category user input (rent, utility, snacks, etc.)
                         txn_cat_input = input("\nEnter Transaction Category (e.g., 'Rent'): ").strip()
                         
                         # txn date user input. if nothing is entered, use today's date.
                         while True:
                             txn_date_input = input(f"\nEnter Transaction Date "
                                                    f"(MM/DD/YYYY - can leave blank"
-                                                   f"for today's date): ").strip()
+                                                   f" for today's date): ").strip()
 
                             if txn_date_input == "":
                                 txn_date = date_stuff.get_current_date_time_fmtd()
@@ -103,12 +100,52 @@ class UserInterface:
                     txn = Transaction()
                     txn.view_transactions()
                     self.back_to_main_or_exit()
+
+                # update a transaction.
+                case "3":
+                    txn = Transaction()
+                    console = Console()
+                    txn.view_transactions()
+
+                    id = "\nEnter the ID for the transaction you want to updated. "
+                    id += "\n\nAlternatively, enter 'm' for main menu, or 'e' to exit: "
+                    
+                    user_txn_id = input(id)
+                    
+                    new_amount = float(input("\nEnter New Transaction Amount: ").strip())
+                    new_category = input("\nEnter New Category: ".strip())
+                    
+                    while True:
+                        new_date = input(f"Enter New Transaction Date "
+                                               f"(MM/DD/YYYY - can leave blank"
+                                               f" for today's date): ").strip()
+                        print("\n\n")
+
+                        if new_date == "":
+                            new_date = date_stuff.get_current_date_time_fmtd()
+                            break
+                        try:
+                            parsed_date = datetime.strptime(new_date, 
+                                                            "%m/%d/%Y")
+                            new_date = parsed_date.strftime("%m/%d/%Y")
+                            break
+                        except ValueError:
+                            print("Invalid date format. Please enter the date as MM/DD/YYYY.")
+
+                    if user_txn_id.lower() == 'm':
+                        self.main_menu()
+                    if user_txn_id.lower() == 'e':
+                        print("Exiting... Bye!")
+                        sys.exit()
+
+                    txn.update_transaction(user_txn_id, float(new_amount), new_category, new_date)
+                    
                 # exit.
                 case "5":
                     print("Exiting... Bye!")
                     break
                 case _:
-                    print("\nInvalid option.")
+                    print("\nInvalid option.\n\n")
 
 
     def greeting(self):
@@ -152,8 +189,7 @@ class UserInterface:
         while True:
             budget_menu = "1. Set Budget"
             if self.budget.is_budget_set():
-                budget_menu += "\n2. Update Budget"
-                budget_menu += "\n3. Remove Budget"
+                budget_menu += "\n2. Remove Budget"
             budget_menu += "\n4. Back to Main Menu"
         
             panel = Panel(budget_menu, 
@@ -166,31 +202,18 @@ class UserInterface:
             print("\n\n")
 
             match ans:
+                # set a budget. not going to make an update as it seems 
+                # redundant.
                 case "1":
-                    # the set option is always present.
-                    print("\n-- Set Budget --")
-                    budget_amt = input("Enter Budget Amount: ").strip()
-                    budget_occur = Prompt.ask("Enter Occurrence ", 
-                                              choices=['Daily','Weekly','Monthly']
-                                              ).strip().title()
-                    self.budget = Budget(budget_occur, budget_amt)
-                    self.budget.save_budget()
-                    print("\nBudget saved!")
-
+                    self.budget.set_budget()
+                
+                # remove budget.
                 case "2":
-                    if self.budget.is_budget_set():
-                        print(f"\n-- Your Budget --"
-                              f"\n====Amount: {self.budget.amt}"
-                              f"\n====Occurs: {self.budget.occurs}")
-                    else:
-                        print("You need to set a budget first using option 1.")
-
-                case "3":
                     if self.budget.is_budget_set():
                         self.budget.remove_budget()
                         print("Budget removed.\n")
-
-                case "4":
+                # back to the main menu.
+                case "3":
                     break
 
                 case _:
