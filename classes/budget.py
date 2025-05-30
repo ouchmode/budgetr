@@ -65,8 +65,7 @@ class Budget:
         """
         self.amt = ""
         self.occurs = ""
-        if os.path.exists('./data/budget.json'):
-            os.remove('./data/budget.json')
+        self.save_budget()
 
 
     def set_budget(self):
