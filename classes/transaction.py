@@ -1,11 +1,10 @@
 from pathlib import Path
+import json
 
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 from rich import box
-
-import json
 
 
 class Transaction:
@@ -68,31 +67,52 @@ class Transaction:
             return
 
         table.add_column("ID", width=10, header_style="magenta")
-        table.add_column("AMOUNT", width=10, header_style="magenta")
+        table.add_column("AMOUNT", width=15, header_style="magenta")
         table.add_column("CATEGORY", width=20, no_wrap=False, header_style="magenta")
         table.add_column("DATE", width=10, header_style="magenta")
         for txn_id, txn in self.transactions.items():
-            amount_str = str(txn['amount'])
-            table.add_row(txn_id, amount_str, txn['category'], txn['date'])
+            amount_str = f"${txn['amount']:.2f}"
+            table.add_row(txn_id, amount_str, txn['category'].title(), txn['date'])
 
         console.print(table)
         print("\n\n")
 
 
-    def update_transaction(self, txn_id, key, new_value):
+    def update_transaction(self, user_txn_id, new_amt=0.0, new_cat="", new_date=""):
         """
         update a specific key's values in a transaction. saves the update 
         using save_txn.
         """
+        table = Table(title="//$---TRANSACTIONS---$//", 
+                      border_style="white", 
+                      box=box.SIMPLE_HEAD, 
+                      highlight=True)
+        console = Console()
+
+        table.add_column("ID", width=10, header_style="magenta")
+        table.add_column("AMOUNT", width=10, header_style="magenta")
+        table.add_column("CATEGORY", width=20, no_wrap=False, header_style="magenta")
+        table.add_column("DATE", width=10, header_style="magenta")
 
         # need to make sure the id entered is valid. if it is, update the 
         # key's value to new_value and run the save.
-        if txn_id in self.transactions and key in self.transactions[txn_id]:
-            self.transactions[txn_id][key] = new_value
+        if user_txn_id in self.transactions:
+            
+            # showing the selected transaction's details in a table.
+            amt_for_table = f"${new_amt:,.2f}"
+            table.add_row(user_txn_id, amt_for_table, new_cat, new_date)
+            console.print(table)
+            print("\n")
+
+            self.transactions[user_txn_id] = {
+                "amount": float(new_amt),
+                "category": new_cat,
+                "date": new_date,
+            }      
             self.save_txn()
-            print(f"\nTransaction {txn_id} updated.")
+            print(f"\n\nTransaction {user_txn_id} updated.\n\n")
         else:
-            print("\nInvalid transaction ID or key.")
+            print("\n\nInvalid transaction ID or key.")
 
 
     def save_txn(self):
