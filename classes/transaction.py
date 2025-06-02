@@ -1,10 +1,14 @@
+# psl imports.
 from pathlib import Path
 import json
 
+# rich imports.
 from rich.console import Console
-from rich.table import Table
 from rich.panel import Panel
-from rich import box
+from rich import print
+
+# custom module imports.
+import util.tables
 
 
 class Transaction:
@@ -56,26 +60,15 @@ class Transaction:
         displays all transactions.
         """
         console = Console()
-        table = Table(title="//$---TRANSACTIONS---$//", 
-                      border_style="white", 
-                      box=box.SIMPLE_HEAD, 
-                      row_styles=["dim", ""], 
-                      highlight=True)
 
-        if not self.transactions:
-            print("\nNo transactions found.")
-            return
+        table = util.tables.all_txns_table_setup() 
 
-        table.add_column("ID", width=10, header_style="magenta")
-        table.add_column("AMOUNT", width=15, header_style="magenta")
-        table.add_column("CATEGORY", width=20, no_wrap=False, header_style="magenta")
-        table.add_column("DATE", width=10, header_style="magenta")
         for txn_id, txn in self.transactions.items():
             amount_str = f"${txn['amount']:.2f}"
             table.add_row(txn_id, amount_str, txn['category'].title(), txn['date'])
 
         console.print(table)
-        print("\n\n")
+        print("\n\n")   
 
 
     def update_transaction(self, user_txn_id, new_amt=0.0, new_cat="", new_date=""):
@@ -83,44 +76,37 @@ class Transaction:
         update a specific key's values in a transaction. saves the update 
         using save_txn.
         """
-        table = Table(title="//$---TRANSACTIONS---$//", 
-                      border_style="white", 
-                      box=box.SIMPLE_HEAD, 
-                      highlight=True)
         console = Console()
+        table = util.tables.all_txns_table_setup() 
 
-        table.add_column("ID", width=10, header_style="magenta")
-        table.add_column("AMOUNT", width=10, header_style="magenta")
-        table.add_column("CATEGORY", width=20, no_wrap=False, header_style="magenta")
-        table.add_column("DATE", width=10, header_style="magenta")
+        # showing the selected transaction's details in a table.
+        amt_for_table = f"${new_amt:,.2f}"
+        table.add_row(user_txn_id, amt_for_table, new_cat, new_date)
+        console.print(table)
+        print("\n")
 
-        # need to make sure the id entered is valid. if it is, update the 
-        # key's value to new_value and run the save.
-        if user_txn_id in self.transactions:
-            
-            # showing the selected transaction's details in a table.
-            amt_for_table = f"${new_amt:,.2f}"
-            table.add_row(user_txn_id, amt_for_table, new_cat, new_date)
-            console.print(table)
-            print("\n")
+        self.transactions[user_txn_id] = {
+            "amount": float(new_amt),
+            "category": new_cat,
+            "date": new_date,
+        }      
+        self.save_txn()
+        print(f"\n\nTransaction {user_txn_id} updated.\n\n")
 
-            self.transactions[user_txn_id] = {
-                "amount": float(new_amt),
-                "category": new_cat,
-                "date": new_date,
-            }      
-            self.save_txn()
-            print(f"\n\nTransaction {user_txn_id} updated.\n\n")
-        else:
-            print("\n\nInvalid transaction ID or key.")
 
+    def delete_transaction(self, user_txn_id):
+        """
+        remove a transaction based on a selected id. 
+        """
+        del self.transactions[user_txn_id]
+        self.save_txn()
 
     def save_txn(self):
         """saves to the JSON file."""
         path = Path(self.filepath)
         if not path.exists():
             print(f"\n\n[ERROR]: {self.filepath} does not exist."
-                  f"\nMake sure exists under the project root.")
+                  f"\nMake sure it exists under the project root.")
         path.write_text(json.dumps(self.transactions, indent=4))
 
 

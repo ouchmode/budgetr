@@ -14,7 +14,6 @@ from classes.transaction import Transaction
 from classes.budget import Budget
 from util import date_stuff
 
-
 class UserInterface:
 
     """
@@ -36,10 +35,10 @@ class UserInterface:
 
         only ran once in main.py when the program starts.
         """
-                
         console = Console()
 
         while True:
+
             self.greeting()
 
             menu = "[cyan]0.[/] Budgeting"
@@ -65,26 +64,10 @@ class UserInterface:
                 # add transaction.
                 case "1":
                     while True:
-                        # txn amount user input.
                         txn_amt_input = float(input("\nEnter Transaction Amount: ").strip())
                         txn_cat_input = input("\nEnter Transaction Category (e.g., 'Rent'): ").strip()
-                        
-                        # txn date user input. if nothing is entered, use today's date.
-                        while True:
-                            txn_date_input = input(f"\nEnter Transaction Date "
-                                                   f"(MM/DD/YYYY - can leave blank"
-                                                   f" for today's date): ").strip()
-
-                            if txn_date_input == "":
-                                txn_date = date_stuff.get_current_date_time_fmtd()
-                                break
-                            try:
-                                parsed_date = datetime.strptime(txn_date_input, 
-                                                                "%m/%d/%Y")
-                                txn_date = parsed_date.strftime("%m/%d/%Y")
-                                break
-                            except ValueError:
-                                print("Invalid date format. Please enter the date as MM/DD/YYYY.")
+                        print("\n")
+                        txn_date = date_stuff.set_current_date_or_format_user_date()
                             
                         txn = Transaction()
                         txn.add_transaction(float(txn_amt_input), 
@@ -95,51 +78,38 @@ class UserInterface:
                         # redirects to add_transaction() in transaction.py.
                         self.add_more_txn()
 
+                # shows all transactions, rendered in a table view.
                 case "2":
-                    # shows all transactions, rendered in a table view.
                     txn = Transaction()
-                    txn.view_transactions()
-                    self.back_to_main_or_exit()
+                    if not txn.transactions:
+                        print("\n\n\n\n[bold red]No transactions found.[/bold red]")
+                        self.main_menu()
+                    else:
+                        txn.view_transactions()
+                        self.back_to_main_or_exit()
 
-                # update a transaction.
+                # update a transaction. shows a table of transactions to look 
+                # through them and their ids before updating.
                 case "3":
                     txn = Transaction()
-                    console = Console()
-                    txn.view_transactions()
-
-                    id = "\nEnter the ID for the transaction you want to updated. "
-                    id += "\n\nAlternatively, enter 'm' for main menu, or 'e' to exit: "
                     
-                    user_txn_id = input(id)
-                    
-                    new_amount = float(input("\nEnter New Transaction Amount: ").strip())
-                    new_category = input("\nEnter New Category: ".strip())
-                    
-                    while True:
-                        new_date = input(f"Enter New Transaction Date "
-                                               f"(MM/DD/YYYY - can leave blank"
-                                               f" for today's date): ").strip()
-                        print("\n\n")
+                    user_txn_id = self.delete_and_update_prompts("update")
 
-                        if new_date == "":
-                            new_date = date_stuff.get_current_date_time_fmtd()
-                            break
-                        try:
-                            parsed_date = datetime.strptime(new_date, 
-                                                            "%m/%d/%Y")
-                            new_date = parsed_date.strftime("%m/%d/%Y")
-                            break
-                        except ValueError:
-                            print("Invalid date format. Please enter the date as MM/DD/YYYY.")
+                    new_amount = float(input("\nEnter Transaction Amount: ").strip())
+                    new_category = input("\nEnter Category: ".strip())        
+                    new_date = date_stuff.set_current_date_or_format_user_date()
 
-                    if user_txn_id.lower() == 'm':
-                        self.main_menu()
-                    if user_txn_id.lower() == 'e':
-                        print("Exiting... Bye!")
-                        sys.exit()
-
-                    txn.update_transaction(user_txn_id, float(new_amount), new_category, new_date)
+                    if user_txn_id:
+                        txn.update_transaction(user_txn_id, float(new_amount), new_category, new_date)
+            
+                # delete a transaction based on an id from a table of transactions.
+                case "4": 
+                    txn = Transaction()
+                    user_txn_id = self.delete_and_update_prompts("delete")
                     
+                    if user_txn_id:
+                        txn.delete_transaction(user_txn_id)
+
                 # exit.
                 case "5":
                     print("Exiting... Bye!")
@@ -155,8 +125,9 @@ class UserInterface:
         """
         twelve_hr = datetime.today().strftime('%I:%M %p')
         twenty_four_hr = datetime.today().strftime('%H:%M')
-
-        print(f"\n{'=' * 71}")
+        
+        print("\n\n")
+        print(f"="*70)
         print("[bold white] /$$$$$$$  /$$   /$$ /$$$$$$$   /$$$$$$  /$$$$$$$$ /$$$$$$$$ /$$$$$$$[/bold white]") 
         print("[bold white]| $$__  $$| $$  | $$| $$__  $$ /$$__  $$| $$_____/|__  $$__/| $$__  $$[/bold white]")
         print("[bold white]| $$ \\ $$|  $$  | $$| $$  \\ $$| $$  \\__/| $$         | $$   | $$  \\ $$[/bold white]")
@@ -173,7 +144,7 @@ class UserInterface:
                   f"Occurs: {self.budget.occurs}")
         else:
             print("\nNo budget is currently set.")
-        print(f"{'=' * 70}")
+        print(f"="*70)
 
 
     def budget_menu(self):
@@ -253,4 +224,35 @@ class UserInterface:
                 case 0:
                     return self.main_menu()
                 case _:
-                    print("\nInvalid option. Only 'y' or 'n' should be entered.\n\n")
+                    print("\nInvalid option. Only 'y' or 'n' should be entered.")
+
+
+    def delete_and_update_prompts(self, operation):
+        """
+        returning the user_txn_id for either a delete or update operation that 
+        is specified as an argument.
+        """
+        txn = Transaction()
+        
+        if not txn.transactions:
+            print("\n\n\n\n[bold red]No transactions found.[/bold red]")
+            self.main_menu()
+        else:
+            txn.view_transactions()
+
+        while True:
+            user_txn_id = input(
+                f"\nEnter the ID for the transaction you want to {operation.lower()}. "
+                "\n\nAlternatively, enter 'm' for main menu, or 'e' to exit: "
+            )
+
+            if user_txn_id.lower() == 'm':
+                self.main_menu()
+                return
+            elif user_txn_id.lower() == 'e':
+                print("\nExiting... Bye!\n")
+                sys.exit()
+            
+            if user_txn_id not in txn.transactions:
+                print("\n[bold red]No transaction found for the selected ID.[/bold red]\n")
+            return user_txn_id
