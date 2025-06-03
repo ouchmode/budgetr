@@ -52,7 +52,7 @@ class Transaction:
                       width=50)    
         
         console.print(panel)
-        print("\n\n")
+        print("\n")
 
 
     def view_transactions(self):

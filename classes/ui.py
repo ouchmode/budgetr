@@ -58,11 +58,13 @@ class UserInterface:
             match ans:
                 # budgeting options.
                 case "0":
+                    console.clear()
                     print("\n")
                     self.budget_menu()
 
                 # add transaction.
                 case "1":
+                    console.clear()
                     while True:
                         txn_amt_input = float(input("\nEnter Transaction Amount: ").strip())
                         txn_cat_input = input("\nEnter Transaction Category (e.g., 'Rent'): ").strip()
@@ -80,6 +82,7 @@ class UserInterface:
 
                 # shows all transactions, rendered in a table view.
                 case "2":
+                    console.clear()
                     txn = Transaction()
                     if not txn.transactions:
                         print("\n\n\n\n[bold red]No transactions found.[/bold red]")
@@ -91,6 +94,7 @@ class UserInterface:
                 # update a transaction. shows a table of transactions to look 
                 # through them and their ids before updating.
                 case "3":
+                    console.clear()
                     txn = Transaction()
                     
                     user_txn_id = self.delete_and_update_prompts("update")
@@ -103,7 +107,8 @@ class UserInterface:
                         txn.update_transaction(user_txn_id, float(new_amount), new_category, new_date)
             
                 # delete a transaction based on an id from a table of transactions.
-                case "4": 
+                case "4":
+                    console.clear()
                     txn = Transaction()
                     user_txn_id = self.delete_and_update_prompts("delete")
                     
@@ -115,7 +120,8 @@ class UserInterface:
                     print("Exiting... Bye!")
                     break
                 case _:
-                    print("\nInvalid option.\n\n")
+                    console.clear()
+                    print("\n\nInvalid option.")
 
 
     def greeting(self):
@@ -161,7 +167,7 @@ class UserInterface:
             budget_menu = "1. Set Budget"
             if self.budget.is_budget_set():
                 budget_menu += "\n2. Remove Budget"
-            budget_menu += "\n4. Back to Main Menu"
+            budget_menu += "\n3. Back to Main Menu"
         
             panel = Panel(budget_menu, 
                           title="Budget Menu", 
@@ -180,14 +186,16 @@ class UserInterface:
                 
                 # remove budget.
                 case "2":
-                    if self.budget.is_budget_set():
-                        self.budget.remove_budget()
-                        print("Budget removed.\n")
+                    console.clear()
+                    self.budget.remove_budget()
+                    print("Budget removed.\n")
                 # back to the main menu.
                 case "3":
+                    console.clear()
                     break
 
                 case _:
+                    console.clear()
                     print("\nInvalid option.\n\n")
 
 
@@ -200,11 +208,15 @@ class UserInterface:
         # the y/n from Confirm.ask() returns True or False, and apparently the 
         # match-case doesn't work with bools.
         ans = int(ans)
+        console = Console()
+
         while True:
             match ans:
                 case 1:
+                    console.clear()
                     self.main_menu()
                 case 0:
+                    console.clear()
                     print("\n\nExiting... Bye!")
                     sys.exit()
                 case _:
@@ -233,6 +245,7 @@ class UserInterface:
         is specified as an argument.
         """
         txn = Transaction()
+        console = Console()
         
         if not txn.transactions:
             print("\n\n\n\n[bold red]No transactions found.[/bold red]")
@@ -247,9 +260,11 @@ class UserInterface:
             )
 
             if user_txn_id.lower() == 'm':
+                console.clear()
                 self.main_menu()
                 return
             elif user_txn_id.lower() == 'e':
+                console.clear()
                 print("\nExiting... Bye!\n")
                 sys.exit()
             
