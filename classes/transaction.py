@@ -1,13 +1,17 @@
 # psl imports.
+from datetime import datetime, timedelta
 from pathlib import Path
 import json
 
 # rich imports.
 from rich.console import Console
 from rich.panel import Panel
+from rich.table import Table
 from rich import print
+from rich import box
 
 # custom module imports.
+import util.date_stuff
 import util.tables
 
 
@@ -83,7 +87,6 @@ class Transaction:
         amt_for_table = f"${new_amt:,.2f}"
         table.add_row(user_txn_id, amt_for_table, new_cat, new_date)
         console.print(table)
-        print("\n")
 
         self.transactions[user_txn_id] = {
             "amount": float(new_amt),
@@ -91,8 +94,8 @@ class Transaction:
             "date": new_date,
         }      
         self.save_txn()
-        print(f"\n\nTransaction {user_txn_id} updated.\n\n")
-
+        print(f"Transaction {user_txn_id} updated.\n\n")
+        
 
     def delete_transaction(self, user_txn_id):
         """
@@ -100,6 +103,104 @@ class Transaction:
         """
         del self.transactions[user_txn_id]
         self.save_txn()
+
+
+    def get_totals(self):
+        """
+        gets daily, weekly and monthly totals based on entered transactions.
+        
+        if a budget is set, these will be used against it to show how above or 
+        below your budget you are.
+        """
+        # today = datetime.today().strftime('%m-%d-%Y')
+
+        console = Console()
+        
+        table = Table(border_style="white", 
+                      box=box.SIMPLE_HEAD, 
+                      row_styles=["dim", ""], 
+                      highlight=True)
+
+        table.add_column("TODAY", width=15, header_style="magenta", justify="center")
+        table.add_column("WEEK", width=15, header_style="magenta", justify="center")
+        table.add_column("MONTH", width=15, header_style="magenta", justify="center")
+        
+        today_tot = self.today_total()
+        today_tot_str = f"${today_tot:,.2f}"
+
+        week_tot = self.week_total()
+        week_tot_str = f"${week_tot:,.2f}"
+
+        month_tot = self.month_total()
+        month_tot_str = f"${month_tot:,.2f}"
+
+        table.add_row(today_tot_str, week_tot_str, month_tot_str)
+
+        panel = Panel(table, 
+                      title="TOTALS", 
+                      border_style="green", 
+                      width=45)
+
+        console.print(panel)
+
+    
+    def today_total(self):
+        """
+        returns the total of all transactions that fall within the same day.
+        """
+        today_tot = 0
+        for v in self.transactions.values():
+            if v['date'] == util.date_stuff.get_current_date_fmtd():
+                if v['amount']:
+                    today_tot += v['amount']
+            else:
+                continue
+        
+        return today_tot
+
+
+    def week_total(self):
+        """
+        Returns the total for all transactions that fall within the current week.
+        """
+        week_tot = 0
+
+        today = util.date_stuff.get_current_date_fmtd()
+        weekday_num = today.weekday()
+
+        start_of_week = today - timedelta(days=weekday_num)
+
+        print("Today:", datetime.strftime(today, '%m/%d/%Y'))
+        print("Weekday number:", weekday_num)
+        print("Start of Week:", datetime.strftime(start_of_week, '%m/%d/%Y'))
+
+        for txn in self.transactions.values():
+            txn_datetime = datetime.strptime(txn['date'], '%m/%d/%Y')
+            # checking if the txn date is within the current week. 
+            if start_of_week <= txn_datetime <= today:
+                week_tot += txn['amount']
+
+        return week_tot
+
+
+    def month_total(self):
+        """
+        returns the total for all transactions that fall within the same month.
+        """
+        month_tot = 0
+        
+        today = util.date_stuff.get_current_date_fmtd()
+        today_str = datetime.strftime(today, '%m/%d/%Y')
+        curr_month_num = today.month 
+        
+        for txn in self.transactions.values():
+            txn_date = datetime.strptime(txn['date'], '%m/%d/%Y')
+            txn_date_mon = txn_date.month
+            if txn_date_mon == curr_month_num:
+                month_tot += txn['amount']
+                
+        return month_tot
+
 
     def save_txn(self):
         """saves to the JSON file."""
