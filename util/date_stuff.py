@@ -1,5 +1,17 @@
 from datetime import datetime
 
+from textual_datepicker import DateSelect
+from textual.containers import Container
+
+days_of_the_week = ['Sunday',
+                    'Monday',
+                    'Tuesday',
+                    'Wednesday',
+                    'Thursday',
+                    'Friday',
+                    'Saturday'
+                    ]
+
 def get_time_period_of_day():
     """
     returns "morning", "afternoon", "evening" or "night" based on the 
@@ -16,9 +28,12 @@ def get_time_period_of_day():
     else:
         return "Night"
 
-def get_current_date_time_fmtd():
+
+def get_current_date_fmtd():
     """ used to default to the current date. """
-    return datetime.today().strftime('%m/%d/%Y')
+    today = datetime.today().strftime('%m/%d/%Y')
+    today_dt_obj = datetime.strptime(today, '%m/%d/%Y')
+    return today_dt_obj
 
 
 def set_current_date_or_format_user_date():
@@ -33,11 +48,11 @@ def set_current_date_or_format_user_date():
         print("\n\n")
 
         if new_date == "":
-            new_date = get_current_date_time_fmtd()
+            new_date = get_current_date_fmtd()
+            new_date = datetime.strftime(new_date, "%m/%d/%Y")
             break
         try:
-            parsed_date = datetime.strptime(new_date, 
-                                            "%m/%d/%Y")
+            parsed_date = datetime.strptime(new_date, "%m/%d/%Y")
             new_date = parsed_date.strftime("%m/%d/%Y")
             break
         except ValueError:
