@@ -78,7 +78,7 @@ class UserInterface:
                         
                         # this is made in ui.py as it's mainly a prompt that 
                         # redirects to add_transaction() in transaction.py.
-                        self.add_more_txn()
+                        self.add_or_update_more_txn("add")
 
                 # shows all transactions, rendered in a table view.
                 case "2":
@@ -105,6 +105,7 @@ class UserInterface:
 
                     if user_txn_id:
                         txn.update_transaction(user_txn_id, float(new_amount), new_category, new_date)
+                    self.add_or_update_more_txn("update")
             
                 # delete a transaction based on an id from a table of transactions.
                 case "4":
@@ -114,9 +115,15 @@ class UserInterface:
                     
                     if user_txn_id:
                         txn.delete_transaction(user_txn_id)
+                
+                case "5":
+                    console.clear()
+                    txn = Transaction()
+                    txn.get_totals()
 
                 # exit.
-                case "5":
+                case "6":
+                    console.clear()
                     print("Exiting... Bye!")
                     break
                 case _:
@@ -223,11 +230,11 @@ class UserInterface:
                     print("\nInvalid option. Only 'y' or 'n' should be entered.\n\n")
 
 
-    def add_more_txn(self):
+    def add_or_update_more_txn(self, operation):
         """
-        yes/no menu to add another transaction or go back to the main menu.
+        yes/no menu to add / update another transaction, or go back to the main menu.
         """
-        ask_txn = Confirm.ask("\nAdd Another Transaction?")
+        ask_txn = Confirm.ask(f"\n{operation.title()} Another Transaction?")
         ask_txn = int(ask_txn)
         while True:
             match ask_txn:    
