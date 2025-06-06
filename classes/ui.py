@@ -46,8 +46,8 @@ class UserInterface:
             menu += "\n[cyan]2.[/] View Transaction"
             menu += "\n[cyan]3.[/] Update Transaction"
             menu += "\n[cyan]4.[/] Delete Transaction"
-            menu += "\n[cyan]5.[/] Totals"
-            menu += "\n[cyan]6.[/] Exit"
+            # menu += "\n[cyan]5.[/] Totals"
+            menu += "\n[cyan]5.[/] Exit"
            
             panel = Panel(menu, title="Main Menu", box=DOUBLE_EDGE, border_style="cyan", width=50)
             console.print(panel)
@@ -104,25 +104,28 @@ class UserInterface:
                     new_date = date_stuff.set_current_date_or_format_user_date()
 
                     if user_txn_id:
-                        txn.update_transaction(user_txn_id, float(new_amount), new_category, new_date)
+                        txn.update_transaction(user_txn_id, 
+                                               float(new_amount), 
+                                               new_category, 
+                                               new_date)
                     self.add_or_update_more_txn("update")
             
                 # delete a transaction based on an id from a table of transactions.
                 case "4":
                     console.clear()
                     txn = Transaction()
-                    user_txn_id = self.delete_and_update_prompts("delete")
                     
-                    if user_txn_id:
-                        txn.delete_transaction(user_txn_id)
-                
-                case "5":
-                    console.clear()
-                    txn = Transaction()
-                    txn.get_totals()
+                    user_txn_id = self.delete_and_update_prompts("delete")
+
+                    txn.delete_transaction(user_txn_id)
+                #
+                # case "5":
+                #     console.clear()
+                #     txn = Transaction()
+                #     txn.get_totals()
 
                 # exit.
-                case "6":
+                case "5":
                     console.clear()
                     print("Exiting... Bye!")
                     break
@@ -136,6 +139,8 @@ class UserInterface:
         greets the user and displays the current time along with their set 
         budget. 
         """
+        txn = Transaction()
+
         twelve_hr = datetime.today().strftime('%I:%M %p')
         twenty_four_hr = datetime.today().strftime('%H:%M')
         
@@ -150,7 +155,9 @@ class UserInterface:
         print("[bold white]| $$$$$$$/|  $$$$$$/| $$$$$$$/|  $$$$$$/| $$$$$$$$   | $$   | $$  | $$[/bold white]")
         print("[bold white]|_______/  \\______/ |_______/  \\______/ |________/   |__/   |__/  |__/[/bold white]")
         print(f"\nGood {date_stuff.get_time_period_of_day()}! "
-              f"It is currently {twelve_hr} ({twenty_four_hr})")
+              f"It is currently {twelve_hr} ({twenty_four_hr})\n")
+
+        txn.get_totals()
 
         if self.budget.is_budget_set():
             print(f"\nCurrent Budget: ${self.budget.amt} | "
@@ -277,4 +284,5 @@ class UserInterface:
             
             if user_txn_id not in txn.transactions:
                 print("\n[bold red]No transaction found for the selected ID.[/bold red]\n")
-            return user_txn_id
+            else:
+                return user_txn_id

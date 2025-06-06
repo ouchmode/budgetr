@@ -121,9 +121,9 @@ class Transaction:
                       row_styles=["dim", ""], 
                       highlight=True)
 
-        table.add_column("TODAY", width=15, header_style="magenta", justify="center")
-        table.add_column("WEEK", width=15, header_style="magenta", justify="center")
-        table.add_column("MONTH", width=15, header_style="magenta", justify="center")
+        table.add_column("TODAY", width=23, header_style="magenta", justify="center")
+        table.add_column("WEEK", width=23, header_style="magenta", justify="center")
+        table.add_column("MONTH", width=23, header_style="magenta", justify="center")
         
         today_tot = self.today_total()
         today_tot_str = f"${today_tot:,.2f}"
@@ -139,7 +139,7 @@ class Transaction:
         panel = Panel(table, 
                       title="TOTALS", 
                       border_style="green", 
-                      width=45)
+                      width=70)
 
         console.print(panel)
 
