@@ -196,6 +196,7 @@ class Transaction:
         for txn in self.transactions.values():
             txn_date = datetime.strptime(txn['date'], '%m/%d/%Y')
             txn_date_mon = txn_date.month
+            # comparing the month a transaction occurred to the current month.
             if txn_date_mon == curr_month_num:
                 month_tot += txn['amount']
                 
