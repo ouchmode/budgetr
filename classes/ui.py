@@ -157,8 +157,8 @@ class UserInterface:
         print(f"\nGood {date_stuff.get_time_period_of_day()}! "
               f"It is currently {twelve_hr} ({twenty_four_hr})\n")
 
-        txn.get_totals()
-
+        txn.get_totals(self.budget.occurs)
+        
         if self.budget.is_budget_set():
             print(f"\nCurrent Budget: ${self.budget.amt} | "
                   f"Occurs: {self.budget.occurs}")
@@ -286,3 +286,4 @@ class UserInterface:
                 print("\n[bold red]No transaction found for the selected ID.[/bold red]\n")
             else:
                 return user_txn_id
+

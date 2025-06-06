@@ -29,7 +29,7 @@ class Budget:
 
     def save_budget(self):
         """
-        save 
+        save budget to json.
         """
         with open('./data/budget.json', 'w') as file:
             json.dump({"amt": self.amt, "occurs": self.occurs}, file)
@@ -68,6 +68,9 @@ class Budget:
 
 
     def set_budget(self):
+        """
+        set a budget amount and occurrence, saves to json.
+        """
         # the set option is always present.
         print("\n-- Set Budget --")
         self.occurs = Prompt.ask("Enter Occurrence ", 

@@ -11,9 +11,9 @@ from rich import print
 from rich import box
 
 # custom module imports.
+from classes.budget import Budget
 import util.date_stuff
 import util.tables
-
 
 class Transaction:
 
@@ -44,7 +44,6 @@ class Transaction:
         self.save_txn()
         
         print("\n")
-
         added = f"-ID: {txn_id}"
         added += f"\n-AMOUNT: ${float(amount):.2f}"
         added += f"\n-CATEGORY: {category}"
@@ -105,7 +104,7 @@ class Transaction:
         self.save_txn()
 
 
-    def get_totals(self):
+    def get_totals(self, budget_occurs):
         """
         gets daily, weekly and monthly totals based on entered transactions.
         
@@ -113,17 +112,11 @@ class Transaction:
         below your budget you are.
         """
         # today = datetime.today().strftime('%m-%d-%Y')
-
         console = Console()
-        
         table = Table(border_style="white", 
                       box=box.SIMPLE_HEAD, 
                       row_styles=["dim", ""], 
                       highlight=True)
-
-        table.add_column("TODAY", width=23, header_style="magenta", justify="center")
-        table.add_column("WEEK", width=23, header_style="magenta", justify="center")
-        table.add_column("MONTH", width=23, header_style="magenta", justify="center")
         
         today_tot = self.today_total()
         today_tot_str = f"${today_tot:,.2f}"
@@ -134,6 +127,25 @@ class Transaction:
         month_tot = self.month_total()
         month_tot_str = f"${month_tot:,.2f}"
 
+        # changing the color of the set budget's occurrence column so it stands 
+        # out.
+
+        # im not sure if i can change the color of an individual amount in the table.
+        if budget_occurs == "Daily":
+            table.add_column("TODAY", width=23, header_style="green", justify="center")
+        else:
+            table.add_column("TODAY", width=23, header_style="bright_black", justify="center")
+
+        if budget_occurs == "Weekly":
+            table.add_column("WEEK", width=23, header_style="green", justify="center")
+        else:
+            table.add_column("WEEK", width=23, header_style="bright_black", justify="center")
+
+        if budget_occurs == "Monthly":
+            table.add_column("MONTH", width=23, header_style="green", justify="center")
+        else:
+            table.add_column("MONTH", width=23, header_style="bright_black", justify="center")
+        
         table.add_row(today_tot_str, week_tot_str, month_tot_str)
 
         panel = Panel(table, 
@@ -142,8 +154,8 @@ class Transaction:
                       width=70)
 
         console.print(panel)
+     
 
-    
     def today_total(self):
         """
         returns the total of all transactions that fall within the same day.
