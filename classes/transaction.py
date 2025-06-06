@@ -170,10 +170,6 @@ class Transaction:
 
         start_of_week = today - timedelta(days=weekday_num)
 
-        print("Today:", datetime.strftime(today, '%m/%d/%Y'))
-        print("Weekday number:", weekday_num)
-        print("Start of Week:", datetime.strftime(start_of_week, '%m/%d/%Y'))
-
         for txn in self.transactions.values():
             txn_datetime = datetime.strptime(txn['date'], '%m/%d/%Y')
             # checking if the txn date is within the current week. 
