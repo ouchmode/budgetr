@@ -1,6 +1,7 @@
 # psl imports.
 from datetime import datetime
 import sys
+import os
 
 # rich imports.
 from rich.console import Console
@@ -10,6 +11,7 @@ from rich.panel import Panel
 from rich import print
 
 # project imports.
+from classes import budget
 from classes.transaction import Transaction
 from classes.budget import Budget
 from util import date_stuff
@@ -26,6 +28,7 @@ class UserInterface:
         self.username = username 
         self.date = date 
         self.budget = Budget()
+        self.txn = Transaction()
         self.budget.load_budget()
 
     def main_menu(self):
@@ -58,21 +61,22 @@ class UserInterface:
             match ans:
                 # budgeting options.
                 case "0":
-                    console.clear()
+                    ui = UserInterface()
+                    ui.clear_console()
                     print("\n")
                     self.budget_menu()
 
                 # add transaction.
                 case "1":
-                    console.clear()
+                    ui = UserInterface()
+                    ui.clear_console()
                     while True:
                         txn_amt_input = float(input("\nEnter Transaction Amount: ").strip())
                         txn_cat_input = input("\nEnter Transaction Category (e.g., 'Rent'): ").strip()
                         print("\n")
                         txn_date = date_stuff.set_current_date_or_format_user_date()
                             
-                        txn = Transaction()
-                        txn.add_transaction(float(txn_amt_input), 
+                        self.txn.add_transaction(float(txn_amt_input), 
                                             txn_cat_input, 
                                             txn_date)
                         
@@ -82,20 +86,20 @@ class UserInterface:
 
                 # shows all transactions, rendered in a table view.
                 case "2":
-                    console.clear()
-                    txn = Transaction()
-                    if not txn.transactions:
+                    ui = UserInterface()
+                    ui.clear_console()
+                    if not self.txn.transactions:
                         print("\n\n\n\n[bold red]No transactions found.[/bold red]")
                         self.main_menu()
                     else:
-                        txn.view_transactions()
+                        self.txn.view_transactions()
                         self.back_to_main_or_exit()
 
                 # update a transaction. shows a table of transactions to look 
                 # through them and their ids before updating.
                 case "3":
-                    console.clear()
-                    txn = Transaction()
+                    ui = UserInterface()
+                    ui.clear_console()
                     
                     user_txn_id = self.delete_and_update_prompts("update")
 
@@ -104,7 +108,7 @@ class UserInterface:
                     new_date = date_stuff.set_current_date_or_format_user_date()
 
                     if user_txn_id:
-                        txn.update_transaction(user_txn_id, 
+                        self.txn.update_transaction(user_txn_id, 
                                                float(new_amount), 
                                                new_category, 
                                                new_date)
@@ -112,25 +116,22 @@ class UserInterface:
             
                 # delete a transaction based on an id from a table of transactions.
                 case "4":
-                    console.clear()
-                    txn = Transaction()
+                    ui = UserInterface()
+                    ui.clear_console()
                     
                     user_txn_id = self.delete_and_update_prompts("delete")
 
-                    txn.delete_transaction(user_txn_id)
-                #
-                # case "5":
-                #     console.clear()
-                #     txn = Transaction()
-                #     txn.get_totals()
+                    self.txn.delete_transaction(user_txn_id)
 
                 # exit.
                 case "5":
-                    console.clear()
+                    ui = UserInterface()
+                    ui.clear_console()
                     print("Exiting... Bye!")
                     break
                 case _:
-                    console.clear()
+                    ui = UserInterface()
+                    ui.clear_console()
                     print("\n\nInvalid option.")
 
 
@@ -139,8 +140,6 @@ class UserInterface:
         greets the user and displays the current time along with their set 
         budget. 
         """
-        txn = Transaction()
-
         twelve_hr = datetime.today().strftime('%I:%M %p')
         twenty_four_hr = datetime.today().strftime('%H:%M')
         
@@ -157,11 +156,13 @@ class UserInterface:
         print(f"\nGood {date_stuff.get_time_period_of_day()}! "
               f"It is currently {twelve_hr} ({twenty_four_hr})\n")
 
-        txn.get_totals(self.budget.occurs)
+        self.txn.get_totals(self.budget.occurs)
         
         if self.budget.is_budget_set():
             print(f"\nCurrent Budget: ${self.budget.amt} | "
                   f"Occurs: {self.budget.occurs}")
+            print("\n")
+            self.budget.budget_progress()
         else:
             print("\nNo budget is currently set.")
         print(f"="*70)
@@ -200,16 +201,19 @@ class UserInterface:
                 
                 # remove budget.
                 case "2":
-                    console.clear()
+                    ui = UserInterface()
+                    ui.clear_console()
                     self.budget.remove_budget()
                     print("Budget removed.\n")
                 # back to the main menu.
                 case "3":
-                    console.clear()
+                    ui = UserInterface()
+                    ui.clear_console()
                     break
 
                 case _:
-                    console.clear()
+                    ui = UserInterface()
+                    ui.clear_console()
                     print("\nInvalid option.\n\n")
 
 
@@ -222,15 +226,15 @@ class UserInterface:
         # the y/n from Confirm.ask() returns True or False, and apparently the 
         # match-case doesn't work with bools.
         ans = int(ans)
-        console = Console()
+        ui = UserInterface()
 
         while True:
             match ans:
                 case 1:
-                    console.clear()
+                    ui.clear_console()
                     self.main_menu()
                 case 0:
-                    console.clear()
+                    ui.clear_console()
                     print("\n\nExiting... Bye!")
                     sys.exit()
                 case _:
@@ -248,6 +252,8 @@ class UserInterface:
                 case 1:
                     break
                 case 0:
+                    ui = UserInterface()
+                    ui.clear_console()
                     return self.main_menu()
                 case _:
                     print("\nInvalid option. Only 'y' or 'n' should be entered.")
@@ -258,14 +264,11 @@ class UserInterface:
         returning the user_txn_id for either a delete or update operation that 
         is specified as an argument.
         """
-        txn = Transaction()
-        console = Console()
-        
-        if not txn.transactions:
+        if not self.txn.transactions:
             print("\n\n\n\n[bold red]No transactions found.[/bold red]")
             self.main_menu()
         else:
-            txn.view_transactions()
+            self.txn.view_transactions()
 
         while True:
             user_txn_id = input(
@@ -274,16 +277,25 @@ class UserInterface:
             )
 
             if user_txn_id.lower() == 'm':
-                console.clear()
+                ui = UserInterface()
+                ui.clear_console()
                 self.main_menu()
                 return
             elif user_txn_id.lower() == 'e':
-                console.clear()
+                ui = UserInterface()
+                ui.clear_console()
                 print("\nExiting... Bye!\n")
                 sys.exit()
             
-            if user_txn_id not in txn.transactions:
+            if user_txn_id not in self.txn.transactions:
                 print("\n[bold red]No transaction found for the selected ID.[/bold red]\n")
             else:
                 return user_txn_id
+
+
+    def clear_console(self):
+        if os.name == 'nt':
+            os.system('cls')
+        else:
+            os.system('clear')
 
