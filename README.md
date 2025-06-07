@@ -8,11 +8,11 @@ Simple CLI app for budgeting. Done as a fun personal project.
     - Amount, Category (i.e. Rent, Food, etc), Date
 - View, Update and Remove transactions
 - Set and remove a budget
-- View *current* Daily, Weekly and Monthly totals.
 - Main Menu that shows:
     - Dynamic greeting ("Good [Morning, Afternoon, Evening, Night]!")
     - Budget, occurrence and budget completion %. 
     - 12 and 24-hour time.
+    - Transaction totals for the day, week and month.
 
 
 ## To Do 
