@@ -11,7 +11,6 @@ from rich.panel import Panel
 from rich import print
 
 # project imports.
-from classes import budget
 from classes.transaction import Transaction
 from classes.budget import Budget
 from util import date_stuff
@@ -27,8 +26,8 @@ class UserInterface:
         self.menu = menu 
         self.username = username 
         self.date = date 
-        self.budget = Budget()
         self.txn = Transaction()
+        self.budget = Budget()
         self.budget.load_budget()
 
     def main_menu(self):
@@ -49,7 +48,6 @@ class UserInterface:
             menu += "\n[cyan]2.[/] View Transaction"
             menu += "\n[cyan]3.[/] Update Transaction"
             menu += "\n[cyan]4.[/] Delete Transaction"
-            # menu += "\n[cyan]5.[/] Totals"
             menu += "\n[cyan]5.[/] Exit"
            
             panel = Panel(menu, title="Main Menu", box=DOUBLE_EDGE, border_style="cyan", width=50)
@@ -61,8 +59,7 @@ class UserInterface:
             match ans:
                 # budgeting options.
                 case "0":
-                    ui = UserInterface()
-                    ui.clear_console()
+                    self.clear_console()
                     print("\n")
                     self.budget_menu()
 
@@ -86,7 +83,7 @@ class UserInterface:
 
                 # shows all transactions, rendered in a table view.
                 case "2":
-                    ui.clear_console()
+                    self.clear_console()
                     if not self.txn.transactions:
                         print("\n\n\n\n[bold red]No transactions found.[/bold red]")
                         self.main_menu()
@@ -136,6 +133,8 @@ class UserInterface:
         greets the user and displays the current time along with their set 
         budget. 
         """
+
+        b_progress = self.budget.budget_progress()
         twelve_hr = datetime.today().strftime('%I:%M %p')
         twenty_four_hr = datetime.today().strftime('%H:%M')
         
@@ -156,9 +155,9 @@ class UserInterface:
         
         if self.budget.is_budget_set():
             print(f"\nCurrent Budget: ${self.budget.amt} | "
-                  f"Occurs: {self.budget.occurs}")
+                  f"Occurs: {self.budget.occurs} | "
+                  f"Progress: {self.budget.budget_progress()}")
             print("\n")
-            self.budget.budget_progress()
         else:
             print("\nNo budget is currently set.")
         print(f"="*70)
@@ -194,7 +193,7 @@ class UserInterface:
                 # redundant.
                 case "1":
                     self.budget.set_budget()
-                
+                    self.budget.save_budget()
                 # remove budget.
                 case "2":
                     self.clear_console()
