@@ -4,16 +4,16 @@ from pathlib import Path
 import json
 
 # rich imports.
-from rich.console import Console
+from rich.console import Console 
 from rich.panel import Panel
 from rich.table import Table
 from rich import print
 from rich import box
 
 # custom module imports.
-from classes.budget import Budget
-import util.date_stuff
-import util.tables
+import util.date_stuff as dates
+import util.file_mgmt as files
+import util.tables as tables
 
 class Transaction:
 
@@ -26,7 +26,7 @@ class Transaction:
         this comes from the load_txn() method.
         """
         self.filepath = './data/transactions.json'
-        self.transactions = self.load_txn()
+        self.transactions = files.load_txn(self.filepath)
 
 
     def add_transaction(self, amount, category, date):
@@ -34,14 +34,14 @@ class Transaction:
         add a new transaction as a dict and save it.
         """
         console = Console()
-
+        
         txn_id = len(self.transactions) + 1
         self.transactions[txn_id] = {
             "amount": float(amount),
             "category": category,
             "date": date
         }
-        self.save_txn()
+        files.save_txn(self.filepath, self.transactions)
         
         print("\n")
         added = f"-ID: {txn_id}"
@@ -64,11 +64,12 @@ class Transaction:
         """
         console = Console()
 
-        table = util.tables.all_txns_table_setup() 
+        table = tables.all_txns_table_setup() 
 
         for txn_id, txn in self.transactions.items():
             amount_str = f"${txn['amount']:.2f}"
-            table.add_row(txn_id, amount_str, txn['category'].title(), txn['date'])
+            if txn['category'] == "" or txn['category']:
+                table.add_row(str(txn_id), amount_str, txn['category'].title(), txn['date'])
 
         console.print(table)
         print("\n\n")   
@@ -80,7 +81,7 @@ class Transaction:
         using save_txn.
         """
         console = Console()
-        table = util.tables.all_txns_table_setup() 
+        table = tables.all_txns_table_setup() 
 
         # showing the selected transaction's details in a table.
         amt_for_table = f"${new_amt:,.2f}"
@@ -92,16 +93,21 @@ class Transaction:
             "category": new_cat,
             "date": new_date,
         }      
-        self.save_txn()
-        print(f"Transaction {user_txn_id} updated.\n\n")
-        
+        files.save_txn(self.filepath, self.transactions)
+        panel = Panel(f"\n\t\tTransaction {user_txn_id} updated.\n\n",
+                      title="Transaction Updated!", 
+                      border_style="green", 
+                      width=50)
+
+        console.print(panel) 
+
 
     def delete_transaction(self, user_txn_id):
         """
         remove a transaction based on a selected id. 
         """
         del self.transactions[user_txn_id]
-        self.save_txn()
+        files.save_txn(self.filepath, self.transactions)
 
 
     def get_totals(self, budget_occurs):
@@ -162,7 +168,7 @@ class Transaction:
         """
         today_tot = 0
         for v in self.transactions.values():
-            if v['date'] == util.date_stuff.get_current_date_fmtd():
+            if v['date'] == datetime.strftime(dates.get_current_date(), '%m/%d/%Y'):
                 if v['amount']:
                     today_tot += v['amount']
             else:
@@ -177,7 +183,7 @@ class Transaction:
         """
         week_tot = 0
 
-        today = util.date_stuff.get_current_date_fmtd()
+        today = dates.get_current_date()
         weekday_num = today.weekday()
 
         start_of_week = today - timedelta(days=weekday_num)
@@ -197,8 +203,7 @@ class Transaction:
         """
         month_tot = 0
         
-        today = util.date_stuff.get_current_date_fmtd()
-        today_str = datetime.strftime(today, '%m/%d/%Y')
+        today = dates.get_current_date()
         curr_month_num = today.month 
         
         for txn in self.transactions.values():
@@ -210,24 +215,3 @@ class Transaction:
                 
         return month_tot
 
-
-    def save_txn(self):
-        """saves to the JSON file."""
-        path = Path(self.filepath)
-        if not path.exists():
-            print(f"\n\n[ERROR]: {self.filepath} does not exist."
-                  f"\nMake sure it exists under the project root.")
-        path.write_text(json.dumps(self.transactions, indent=4))
-
-
-    def load_txn(self):
-        """loads from the JSON file."""
-        path = Path(self.filepath)
-        if not path.exists():
-            return {}
-
-        content = path.read_text().strip()
-        if not content:
-            return {}
-
-        return json.loads(content)  
