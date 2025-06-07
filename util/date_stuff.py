@@ -1,8 +1,5 @@
 from datetime import datetime
 
-from textual_datepicker import DateSelect
-from textual.containers import Container
-
 days_of_the_week = ['Sunday',
                     'Monday',
                     'Tuesday',
@@ -29,7 +26,7 @@ def get_time_period_of_day():
         return "Night"
 
 
-def get_current_date_fmtd():
+def get_current_date():
     """ used to default to the current date. """
     today = datetime.today().strftime('%m/%d/%Y')
     today_dt_obj = datetime.strptime(today, '%m/%d/%Y')
@@ -48,7 +45,7 @@ def set_current_date_or_format_user_date():
         print("\n\n")
 
         if new_date == "":
-            new_date = get_current_date_fmtd()
+            new_date = get_current_date()
             new_date = datetime.strftime(new_date, "%m/%d/%Y")
             break
         try:
