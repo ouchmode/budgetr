@@ -1,5 +1,7 @@
+from time import sleep
 import json
 
+from rich.progress import track
 from rich.prompt import Prompt
 
 class Budget:
@@ -81,3 +83,7 @@ class Budget:
         self.budget = Budget(self.occurs, self.amt)
         self.budget.save_budget()
         print("\nBudget saved!")
+
+
+    def budget_progress(self):
+        pass
