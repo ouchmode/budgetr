@@ -86,7 +86,6 @@ class UserInterface:
 
                 # shows all transactions, rendered in a table view.
                 case "2":
-                    ui = UserInterface()
                     ui.clear_console()
                     if not self.txn.transactions:
                         print("\n\n\n\n[bold red]No transactions found.[/bold red]")
@@ -98,8 +97,7 @@ class UserInterface:
                 # update a transaction. shows a table of transactions to look 
                 # through them and their ids before updating.
                 case "3":
-                    ui = UserInterface()
-                    ui.clear_console()
+                    self.clear_console()
                     
                     user_txn_id = self.delete_and_update_prompts("update")
 
@@ -116,8 +114,7 @@ class UserInterface:
             
                 # delete a transaction based on an id from a table of transactions.
                 case "4":
-                    ui = UserInterface()
-                    ui.clear_console()
+                    self.clear_console()
                     
                     user_txn_id = self.delete_and_update_prompts("delete")
 
@@ -125,8 +122,7 @@ class UserInterface:
 
                 # exit.
                 case "5":
-                    ui = UserInterface()
-                    ui.clear_console()
+                    self.clear_console()
                     print("Exiting... Bye!")
                     break
                 case _:
@@ -201,19 +197,16 @@ class UserInterface:
                 
                 # remove budget.
                 case "2":
-                    ui = UserInterface()
-                    ui.clear_console()
+                    self.clear_console()
                     self.budget.remove_budget()
                     print("Budget removed.\n")
                 # back to the main menu.
                 case "3":
-                    ui = UserInterface()
-                    ui.clear_console()
+                    self.clear_console()
                     break
 
                 case _:
-                    ui = UserInterface()
-                    ui.clear_console()
+                    self.clear_console()
                     print("\nInvalid option.\n\n")
 
 
