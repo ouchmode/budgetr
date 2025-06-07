@@ -1,7 +1,5 @@
-from time import sleep
 import json
 
-from rich.progress import track
 from rich.prompt import Prompt
 
 class Budget:
