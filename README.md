@@ -20,3 +20,18 @@ Simple CLI app for budgeting. Done as a fun personal project.
 - Exporting to a spreadsheet.
 - Compare previous days, weeks or months.
     - Charts
+    - 
+---
+
+## Dependencies 
+
+Requires Python 3.1X (built on 3.13, but can probably be ran on earlier 3.1X versions).
+
+### Setup
+- `pip install -r requirements.txt`
+- `git clone 'https://github.com/ouchmode/budgetr.git'`
+- `cd budgetr`
+
+### Running (from 'budgetr' dir)
+- `python main.py`
+
